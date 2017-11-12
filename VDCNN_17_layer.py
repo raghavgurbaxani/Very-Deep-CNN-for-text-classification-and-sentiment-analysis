@@ -47,6 +47,7 @@ class VDCNN():
         conv_1=conv_layer(self.embedded_characters_expanded, shape=[3, embedding_size, 1, 64],stride=embedding_size)
 
 
+        #First Convolutional Block - 
         conv_2=conv_layer(conv_1, shape=[3, embedding_size, 64, 64],stride=1)
         batch_norm_2=tf.nn.relu(tf.contrib.layers.batch_norm(conv_2))   #Batch Normalization
         conv_3=conv_layer(batch_norm_2, shape=[3, embedding_size, 64, 64],stride=1)
@@ -55,7 +56,14 @@ class VDCNN():
         batch_norm_4=tf.nn.relu(tf.contrib.layers.batch_norm(conv_4))   #Batch Normalization
         conv_5=conv_layer(batch_norm_4, shape=[3, embedding_size, 64, 64],stride=1)
         batch_norm_5=tf.nn.relu(tf.contrib.layers.batch_norm(conv_5))   #Batch Normalization
-        conv_6=conv_layer(batch_norm_5, shape=[3, embedding_size, 64, 128],stride=1)
+
+        pool_1=max_pool(batch_norm_5,stride=2,k=3)
+
+#------------------------------------------------------------------------------------------------------------
+
+        #Second Convolutional Block - 
+
+        conv_6=conv_layer(pool_1, shape=[3, embedding_size, 64, 128],stride=1)
         batch_norm_6=tf.nn.relu(tf.contrib.layers.batch_norm(conv_6))   #Batch Normalization
         conv_7=conv_layer(batch_norm_6, shape=[3, embedding_size, 128, 128],stride=1)
         batch_norm_7=tf.nn.relu(tf.contrib.layers.batch_norm(conv_7))   #Batch Normalization
@@ -63,22 +71,27 @@ class VDCNN():
         batch_norm_8=tf.nn.relu(tf.contrib.layers.batch_norm(conv_8))   #Batch Normalization
         conv_9=conv_layer(batch_norm_8, shape=[3, embedding_size, 128, 128],stride=1)
         batch_norm_9=tf.nn.relu(tf.contrib.layers.batch_norm(conv_9))   #Batch Normalization
-        conv_10=conv_layer(batch_norm_9, shape=[3, embedding_size, 128, 256],stride=1)
+
+        pool_2=max_pool(batch_norm_9,stride=2,k=3)
+
+#------------------------------------------------------------------------------------------------------------
+
+        #Third Convolutional Block - 
+        conv_10=conv_layer(pool_2, shape=[3, embedding_size, 128, 256],stride=1)
         batch_norm_10=tf.nn.relu(tf.contrib.layers.batch_norm(conv_10))   #Batch Normalization
         conv_11=conv_layer(batch_norm_10, shape=[3, embedding_size, 256, 256],stride=1)
         batch_norm_11=tf.nn.relu(tf.contrib.layers.batch_norm(conv_11))   #Batch Normalization
-        
-        pool_1=max_pool(batch_norm_11,stride=2,k=3)
-    
-#------------------------------------------------------------------------------------------------------------
-
-        #Second Convolutional Block - 
-    
-        conv_12=conv_layer(pool_1, shape=[3, embedding_size, 256, 256],stride=1)
+        conv_12=conv_layer(batch_norm_11, shape=[3, embedding_size, 256, 256],stride=1)
         batch_norm_12=tf.nn.relu(tf.contrib.layers.batch_norm(conv_12))   #Batch Normalization
         conv_13=conv_layer(batch_norm_12, shape=[3, embedding_size, 256, 256],stride=1)
         batch_norm_13=tf.nn.relu(tf.contrib.layers.batch_norm(conv_13))   #Batch Normalization
-        conv_14=conv_layer(batch_norm_13, shape=[3, embedding_size, 256, 512],stride=1)
+
+        pool_3=max_pool(batch_norm_13,stride=2,k=3)
+
+#------------------------------------------------------------------------------------------------------------
+
+        #Fourth Convolutional Block - 
+        conv_14=conv_layer(pool_3, shape=[3, embedding_size, 256, 512],stride=1)
         batch_norm_14=tf.nn.relu(tf.contrib.layers.batch_norm(conv_14))   #Batch Normalization
         conv_15=conv_layer(batch_norm_14, shape=[3, embedding_size, 512, 512],stride=1)
         batch_norm_15=tf.nn.relu(tf.contrib.layers.batch_norm(conv_15))   #Batch Normalization
@@ -86,50 +99,11 @@ class VDCNN():
         batch_norm_16=tf.nn.relu(tf.contrib.layers.batch_norm(conv_16))   #Batch Normalization
         conv_17=conv_layer(batch_norm_16, shape=[3, embedding_size, 512, 512],stride=1)
         batch_norm_17=tf.nn.relu(tf.contrib.layers.batch_norm(conv_17))   #Batch Normalization
-        conv_18=conv_layer(batch_norm_17, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_18=tf.nn.relu(tf.contrib.layers.batch_norm(conv_18))   #Batch Normalization
-        conv_19=conv_layer(batch_norm_18, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_19=tf.nn.relu(tf.contrib.layers.batch_norm(conv_19))   #Batch Normalization
-        conv_20=conv_layer(batch_norm_19, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_20=tf.nn.relu(tf.contrib.layers.batch_norm(conv_20))   #Batch Normalization
-        conv_21=conv_layer(batch_norm_20, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_21=tf.nn.relu(tf.contrib.layers.batch_norm(conv_21))   #Batch Normalization
-
-        pool_2=max_pool(batch_norm_21,stride=2,k=3)
-
-#------------------------------------------------------------------------------------------------------------
-
-        #Third Convolutional Block - 
-
-        conv_22=conv_layer(pool_2, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_22=tf.nn.relu(tf.contrib.layers.batch_norm(conv_22))   #Batch Normalization
-        conv_23=conv_layer(batch_norm_22, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_23=tf.nn.relu(tf.contrib.layers.batch_norm(conv_23))   #Batch Normalization
-        conv_24=conv_layer(batch_norm_23, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_24=tf.nn.relu(tf.contrib.layers.batch_norm(conv_24))   #Batch Normalization
-        conv_25=conv_layer(batch_norm_24, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_25=tf.nn.relu(tf.contrib.layers.batch_norm(conv_25))   #Batch Normalization
-        
-        pool_3=max_pool(batch_norm_25,stride=2,k=3)
-
-#------------------------------------------------------------------------------------------------------------
-
-        #Fourth Convolutional Block - 
-
-        conv_26=conv_layer(pool_3, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_26=tf.nn.relu(tf.contrib.layers.batch_norm(conv_26))   #Batch Normalization
-        conv_27=conv_layer(batch_norm_26, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_27=tf.nn.relu(tf.contrib.layers.batch_norm(conv_27))   #Batch Normalization
-        conv_28=conv_layer(batch_norm_27, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_28=tf.nn.relu(tf.contrib.layers.batch_norm(conv_28))   #Batch Normalization
-        conv_29=conv_layer(batch_norm_28, shape=[3, embedding_size, 512, 512],stride=1)
-        batch_norm_29=tf.nn.relu(tf.contrib.layers.batch_norm(conv_29))   #Batch Normalization
-
 
 #------------------------------------------------------------------------------------------------------------
 
 
-        transposed = tf.transpose(batch_norm_29, [0,3,2,1])
+        transposed = tf.transpose(batch_norm_17, [0,3,2,1])
         self.k_pooled = tf.nn.top_k(transposed, k=8)
         reshaped = tf.reshape(self.k_pooled[0], [-1,8*512])
 
