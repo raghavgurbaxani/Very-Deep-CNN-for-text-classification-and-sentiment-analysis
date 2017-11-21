@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 def weight_variable(shape):
     initial=tf.truncated_normal(shape,stddev=0.1)
@@ -40,11 +41,17 @@ class VDCNN():
 
         
         self.embedding_W = tf.Variable(tf.random_uniform([num_quantized_chars, embedding_size], -1.0, 1.0),name="embedding_W")
-        self.embedded_characters = tf.nn.embedding_lookup(self.embedding_W, self.input_x)
+        self.embedded_characters = tf.nn.embedding_lookup(params=self.embedding_W,ids=self.input_x,validate_indices=False)
         self.embedded_characters_expanded = tf.expand_dims(self.embedded_characters, -1, name="embedding_input")
         
+        
         # First Convolutional Layer
-        conv_1=conv_layer(self.embedded_characters_expanded, shape=[3, embedding_size, 1, 64],stride=embedding_size)
+        #conv_1=conv_layer(self.embedded_characters_expanded, shape=[3, embedding_size, 1, 64],stride=embedding_size)
+        
+        shape1=[3, embedding_size, 1, 64]
+        w=weight_variable(shape1)
+        b=bias_variable([shape1[3]])
+        conv_1 = tf.nn.conv2d(self.embedded_characters_expanded, w, strides=[1, 1, embedding_size, 1], padding="SAME")+b
 
         #First Convolutional Block - 
         conv_2=conv_layer(conv_1, shape=[3, embedding_size, 64, 64],stride=1)
@@ -83,10 +90,15 @@ class VDCNN():
         batch_norm_9=tf.nn.relu(tf.contrib.layers.batch_norm(conv_9))   #Batch Normalization
 
 #------------------------------------------------------------------------------------------------------------
+        if use_k_max_pooling:
+            transposed = tf.transpose(self.batch_norm_9, [0,3,2,1])
+            self.k_pooled = tf.nn.top_k(transposed, k=8, name='k_pool')
+            reshaped = tf.reshape(self.k_pooled[0], (-1, 512*8))
+        else:
+            pool_4=max_pool(batch_norm_9,stride=2,k=3)
+            shape = int(np.prod(pool_4.get_shape()[1:]))
+            reshaped = tf.reshape(pool_4, (-1, shape))
 
-        transposed = tf.transpose(batch_norm_9, [0,3,2,1])
-        self.k_pooled = tf.nn.top_k(transposed, k=8)
-        reshaped = tf.reshape(self.k_pooled[0], [-1,8*512])
 
         #Fully-Connected Layer 1
         full_1,l2_loss=full_layer(reshaped,2048,l2_loss)
@@ -104,8 +116,9 @@ class VDCNN():
         #Cross entropy
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits= full_3,labels= self.input_y))
         self.loss = cross_entropy + l2_reg_lambda * l2_loss
+        self.predictions = tf.argmax(full_3, 1, name="predictions")
 
         # Mask for correct predictions
-        correct_prediction = tf.equal(tf.argmax(full_3, 1), tf.argmax(self.input_y, 1))
-        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        correct_predictions = tf.equal(self.predictions, tf.argmax(self.input_y, 1))
+        self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, "float"), name="accuracy")
 
